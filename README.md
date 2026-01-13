@@ -7,16 +7,14 @@ A production-ready medical chatbot application that allows users to input their 
 <div align="center">
 
 ### Welcome Screen
-![Welcome Screen](images/welcome-screen.png)
+![Welcome Screen](images/Welcom_Screen.png)
 *Clean, professional welcome interface with intuitive form layout*
 
 ### Chat Interface  
-![Chat Interface](images/chat-interface.png)
+![Chat Interface](images/Chat_Interface.png)
 *Interactive chat experience with AI-powered medical analysis and chat history management*
 
 </div>
-
-> **Note:** To display screenshots, create an `images/` folder in the root directory and add your screenshot files (`welcome-screen.png` and `chat-interface.png`).
 
 ## Features
 
