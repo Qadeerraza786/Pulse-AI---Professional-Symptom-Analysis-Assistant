@@ -1,4 +1,4 @@
-# Pulse-AI - Professional Symptom Analysis Assistant
+# Pulse-AI - Professional Diseases Analysis Assistant
 
 A production-ready medical chatbot application that allows users to input their medical data, receive AI-powered diagnoses and recommendations, and store all interactions in a MongoDB database.
 
