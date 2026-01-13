@@ -2,6 +2,22 @@
 
 A production-ready medical chatbot application that allows users to input their medical data, receive AI-powered diagnoses and recommendations, and store all interactions in a MongoDB database.
 
+## 📸 Screenshots
+
+<div align="center">
+
+### Welcome Screen
+![Welcome Screen](images/welcome-screen.png)
+*Clean, professional welcome interface with intuitive form layout*
+
+### Chat Interface  
+![Chat Interface](images/chat-interface.png)
+*Interactive chat experience with AI-powered medical analysis and chat history management*
+
+</div>
+
+> **Note:** To display screenshots, create an `images/` folder in the root directory and add your screenshot files (`welcome-screen.png` and `chat-interface.png`).
+
 ## Features
 
 - **Professional Medical AI**: Doctor-like responses with concise, clinical guidance
@@ -49,6 +65,9 @@ Pulse_AI/
 │   ├── package.json      # Node.js dependencies
 │   ├── tailwind.config.js # Tailwind configuration
 │   └── postcss.config.js  # PostCSS configuration
+├── images/                # Screenshots and assets
+│   ├── welcome-screen.png
+│   └── chat-interface.png
 └── README.md             # This file
 ```
 
