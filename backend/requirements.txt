@@ -1,0 +1,18 @@
+# FastAPI web framework for building REST API
+fastapi==0.104.1
+# Uvicorn ASGI server to run FastAPI application
+uvicorn[standard]==0.24.0
+# Motor library for asynchronous MongoDB operations
+motor==3.3.2
+# Pydantic library for data validation and serialization
+# Using newer version with pre-built wheels for Python 3.14
+pydantic>=2.9.0
+# OpenAI Python library for AI integration (compatible with Groq API)
+# Using version 2.x for Python 3.14 compatibility
+openai>=2.15.0
+# HTTP client library - compatible with openai 2.x and Python 3.14
+httpx>=0.25.0
+# Python-dotenv for loading environment variables from .env file
+python-dotenv==1.0.0
+# BSON library for MongoDB ObjectId handling (included with pymongo)
+pymongo==4.6.0
