@@ -1,7 +1,7 @@
 // Import React library for building UI components
 import React, { useState, useEffect } from 'react';
-// Import axios library for making HTTP requests to backend API
-import axios from 'axios';
+// Import API service for making HTTP requests
+import { fetchChatHistory, updateChatSession, deleteChatSession } from './services/api';
 // Import ChatComponent for medical chat interface
 import ChatComponent from './components/ChatComponent';
 // Import Sidebar component for navigation
@@ -31,29 +31,19 @@ function App() {
   };
 
   // Function to fetch chat history from MongoDB via API
-  const fetchChatHistory = async () => {
+  const loadChatHistory = async () => {
     try {
       // Set loading state to true
       setLoadingHistory(true);
-      // Make GET request to backend API to retrieve all chat sessions
-      const response = await axios.get('http://localhost:8000/api/sessions');
+      // Fetch chat history using API service
+      const data = await fetchChatHistory();
       // Update chat history state with data from API
-      setChatHistory(response.data);
+      setChatHistory(data);
       // Log successful fetch
       console.log('Chat history loaded from database');
     } catch (err) {
       // Handle errors from API call
-      // Check if error has response data
-      if (err.response) {
-        // Log error message from API response
-        console.error('Error fetching chat history:', err.response.data.detail || 'An error occurred');
-      } else if (err.request) {
-        // Log error if request was made but no response received
-        console.error('Unable to connect to the server. Please check if the backend is running.');
-      } else {
-        // Log generic error message for other errors
-        console.error('An unexpected error occurred while fetching chat history');
-      }
+      console.error('Error fetching chat history:', err.message);
       // Set empty array on error to prevent UI issues
       setChatHistory([]);
     } finally {
@@ -64,41 +54,30 @@ function App() {
 
   // useEffect hook to fetch chat history when component mounts
   useEffect(() => {
-    // Call fetchChatHistory function on component mount
-    fetchChatHistory();
+    // Call loadChatHistory function on component mount
+    loadChatHistory();
   }, []); // Empty dependency array means this runs only once on mount
 
   // Function to add chat to history (called from ChatComponent)
   const addToHistory = (chatData) => {
     // Refresh chat history from database after adding new chat
-    fetchChatHistory();
+    loadChatHistory();
   };
 
   // Function to handle chat update (rename, pin, etc.)
   const handleChatUpdate = async (chatId, updates) => {
     try {
-      // Make PATCH request to backend API to update chat session
-      await axios.patch(`http://localhost:8000/api/sessions/${chatId}`, updates);
+      // Update chat session using API service
+      await updateChatSession(chatId, updates);
       // Refresh chat history from database after update
-      fetchChatHistory();
+      loadChatHistory();
       // Log successful update
       console.log('Chat updated successfully');
     } catch (err) {
       // Handle errors from API call
-      if (err.response) {
-        // Log error message from API response
-        console.error('Error updating chat:', err.response.data.detail || 'An error occurred');
-        // Show alert to user
-        alert('Failed to update chat. Please try again.');
-      } else if (err.request) {
-        // Log error if request was made but no response received
-        console.error('Unable to connect to the server. Please check if the backend is running.');
-        alert('Unable to connect to the server.');
-      } else {
-        // Log generic error message for other errors
-        console.error('An unexpected error occurred while updating chat');
-        alert('An unexpected error occurred.');
-      }
+      console.error('Error updating chat:', err.message);
+      // Show alert to user
+      alert('Failed to update chat. Please try again.');
       // Re-throw error to be handled by caller
       throw err;
     }
@@ -107,32 +86,21 @@ function App() {
   // Function to handle chat deletion
   const handleChatDelete = async (chatId) => {
     try {
-      // Make DELETE request to backend API to delete chat session
-      await axios.delete(`http://localhost:8000/api/sessions/${chatId}`);
+      // Delete chat session using API service
+      await deleteChatSession(chatId);
       // Clear current chat if it's the one being deleted
       if (currentChat && (currentChat.id === chatId || currentChat._id === chatId)) {
         setCurrentChat(null);
       }
       // Refresh chat history from database after deletion
-      fetchChatHistory();
+      loadChatHistory();
       // Log successful deletion
       console.log('Chat deleted successfully');
     } catch (err) {
       // Handle errors from API call
-      if (err.response) {
-        // Log error message from API response
-        console.error('Error deleting chat:', err.response.data.detail || 'An error occurred');
-        // Show alert to user
-        alert('Failed to delete chat. Please try again.');
-      } else if (err.request) {
-        // Log error if request was made but no response received
-        console.error('Unable to connect to the server. Please check if the backend is running.');
-        alert('Unable to connect to the server.');
-      } else {
-        // Log generic error message for other errors
-        console.error('An unexpected error occurred while deleting chat');
-        alert('An unexpected error occurred.');
-      }
+      console.error('Error deleting chat:', err.message);
+      // Show alert to user
+      alert('Failed to delete chat. Please try again.');
       // Re-throw error to be handled by caller
       throw err;
     }

@@ -1,48 +1,42 @@
-# Import motor library for asynchronous MongoDB operations
+"""
+Database connection and management for MongoDB.
+"""
 from motor.motor_asyncio import AsyncIOMotorClient
-# Import os to access environment variables
-import os
-# Import logging for error tracking
 import logging
+from app.core.config import MONGO_URI, DATABASE_NAME
 
-# Configure logging to track database connection issues
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Global variable to store the MongoDB database instance
 database = None
 
-# Async function to connect to MongoDB database
 async def connect_to_mongo():
     """
-    Establishes connection to MongoDB using connection string from environment variables.
-    Creates database instance for 'pulse_ai' database.
+    Establishes connection to MongoDB using connection string from configuration.
+    Creates database instance for the configured database.
     """
-    # Access global database variable to modify it
     global database
     try:
-        # Get MongoDB connection URI from environment variable, default to localhost if not set
-        mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
         # Create async MongoDB client with connection string
-        client = AsyncIOMotorClient(mongo_uri)
-        # Select 'pulse_ai' database from the MongoDB instance
-        database = client.pulse_ai
+        client = AsyncIOMotorClient(MONGO_URI)
+        # Select database from the MongoDB instance
+        database = getattr(client, DATABASE_NAME)
         # Test connection by running a ping command
         await client.admin.command('ping')
         # Log successful connection
-        logger.info("Successfully connected to MongoDB")
+        logger.info(f"Successfully connected to MongoDB: {DATABASE_NAME}")
     except Exception as e:
         # Log any connection errors that occur
         logger.error(f"Error connecting to MongoDB: {str(e)}")
         # Re-raise exception to prevent application from continuing with invalid connection
         raise
 
-# Async function to disconnect from MongoDB
 async def close_mongo_connection():
     """
     Closes the MongoDB connection gracefully.
     """
-    # Access global database variable
     global database
     try:
         # Check if database connection exists
@@ -57,10 +51,8 @@ async def close_mongo_connection():
         # Log any errors during disconnection
         logger.error(f"Error closing MongoDB connection: {str(e)}")
 
-# Function to get the database instance
 def get_database():
     """
     Returns the database instance for use in other modules.
     """
-    # Return the global database variable
     return database

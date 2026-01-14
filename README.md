@@ -7,11 +7,11 @@ A production-ready medical chatbot application that allows users to input their 
 <div align="center">
 
 ### Welcome Screen
-![Welcome Screen](images/Welcom_Screen.png)
+![Welcome Screen](docs/images/Welcom_Screen.png)
 *Clean, professional welcome interface with intuitive form layout*
 
 ### Chat Interface  
-![Chat Interface](images/Chat_Interface.png)
+![Chat Interface](docs/images/Chat_Interface.png)
 *Interactive chat experience with AI-powered medical analysis and chat history management*
 
 </div>
@@ -45,28 +45,49 @@ A production-ready medical chatbot application that allows users to input their 
 ```
 Pulse_AI/
 ├── backend/
-│   ├── main.py           # FastAPI application with routes
-│   ├── database.py       # MongoDB connection and configuration
-│   ├── schemas.py        # Pydantic models for validation
-│   └── requirements.txt  # Python dependencies
+│   ├── app/                      # Application package
+│   │   ├── __init__.py
+│   │   ├── main.py              # FastAPI app instance and configuration
+│   │   ├── api/                 # API routes
+│   │   │   ├── __init__.py
+│   │   │   └── routes.py        # All API endpoints
+│   │   ├── models/              # Data models
+│   │   │   ├── __init__.py
+│   │   │   └── schemas.py       # Pydantic models for validation
+│   │   ├── core/                # Core configuration
+│   │   │   ├── __init__.py
+│   │   │   ├── config.py        # Application configuration
+│   │   │   └── database.py      # MongoDB connection
+│   │   ├── services/            # Business logic
+│   │   │   ├── __init__.py
+│   │   │   └── ai_service.py   # AI/Groq integration
+│   │   └── utils/               # Utility functions
+│   │       ├── __init__.py
+│   │       └── text_processing.py  # Text cleaning utilities
+│   ├── main.py                  # Entry point (imports app.main)
+│   ├── requirements.txt         # Python dependencies
+│   └── venv/                    # Virtual environment (not in git)
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── ChatComponent.js  # Main chat interface
-│   │   │   ├── Sidebar.js         # Navigation and chat history
-│   │   │   └── Header.js          # Top header bar
-│   │   ├── App.js        # Root React component
-│   │   ├── index.js      # React entry point
-│   │   └── index.css     # Global styles with Tailwind
+│   │   │   └── Sidebar.js        # Navigation and chat history
+│   │   ├── services/
+│   │   │   └── api.js            # API service layer
+│   │   ├── utils/                # Utility functions
+│   │   ├── App.js                # Root React component
+│   │   ├── index.js              # React entry point
+│   │   └── index.css              # Global styles with Tailwind
 │   ├── public/
-│   │   └── index.html    # HTML template
-│   ├── package.json      # Node.js dependencies
-│   ├── tailwind.config.js # Tailwind configuration
-│   └── postcss.config.js  # PostCSS configuration
-├── images/                # Screenshots and assets
-│   ├── welcome-screen.png
-│   └── chat-interface.png
-└── README.md             # This file
+│   │   └── index.html            # HTML template
+│   ├── package.json              # Node.js dependencies
+│   ├── tailwind.config.js        # Tailwind configuration
+│   └── postcss.config.js         # PostCSS configuration
+├── docs/
+│   └── images/                   # Screenshots and assets
+│       ├── Welcom_Screen.png
+│       └── Chat_Interface.png
+└── README.md                     # This file
 ```
 
 ## Setup Instructions

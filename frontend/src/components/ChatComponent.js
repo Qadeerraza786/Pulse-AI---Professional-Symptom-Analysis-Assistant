@@ -1,7 +1,7 @@
 // Import React hooks for state management and side effects
-import React, { useState, useEffect } from 'react';
-// Import axios library for making HTTP requests to backend API
-import axios from 'axios';
+import React, { useState, useEffect, useRef } from 'react';
+// Import API service for making HTTP requests
+import { createChat } from '../services/api';
 
 // ChatComponent - Main component for medical chat interface
 function ChatComponent({ currentChat, onChatComplete }) {
@@ -122,31 +122,28 @@ function ChatComponent({ currentChat, onChatComplete }) {
     setResponse('');
     
     try {
-      // Make POST request to backend API chat endpoint
-      const result = await axios.post('http://localhost:8000/api/chat', {
-        // Send patient name (use "Anonymous" if not provided)
+      // Create chat using API service
+      const result = await createChat({
         name: name.trim() || 'Anonymous',
-        // Send medical problem in request body
         problem: problem.trim(),
-        // Send additional message if provided (can be null)
         message: message.trim() || null
       });
       
       // Set AI response from API result
-      setResponse(result.data.ai_response);
+      setResponse(result.ai_response);
       // Add user message and AI response to messages array
       // Format user message to show name, disease, and optional message
       const userMessageContent = `Name: ${name.trim()}\nDisease: ${problem.trim()}${message.trim() ? `\nAdditional Info: ${message.trim()}` : ''}`;
       const userMessage = { type: 'user', content: userMessageContent, name: name.trim(), additional: message };
-      const aiMessage = { type: 'ai', content: result.data.ai_response };
+      const aiMessage = { type: 'ai', content: result.ai_response };
       setMessages((prev) => [...prev, userMessage, aiMessage]);
       // Call onChatComplete callback to add to history (this will trigger a refresh)
       if (onChatComplete) {
         onChatComplete({
           problem: problem.trim(),
           name: name.trim() || 'Anonymous',
-          ai_response: result.data.ai_response,
-          id: result.data.id
+          ai_response: result.ai_response,
+          id: result.id
         });
       }
       // Clear input fields after successful submission
@@ -156,17 +153,7 @@ function ChatComponent({ currentChat, onChatComplete }) {
       
     } catch (err) {
       // Handle errors from API call
-      // Check if error has response data
-      if (err.response) {
-        // Set error message from API response
-        setError(err.response.data.detail || 'An error occurred while processing your request');
-      } else if (err.request) {
-        // Set error message if request was made but no response received
-        setError('Unable to connect to the server. Please check if the backend is running.');
-      } else {
-        // Set generic error message for other errors
-        setError('An unexpected error occurred');
-      }
+      setError(err.message || 'An unexpected error occurred');
       // Log error details to console for debugging
       console.error('Error:', err);
     } finally {
