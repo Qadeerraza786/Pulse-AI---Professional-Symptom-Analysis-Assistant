@@ -1,14 +1,20 @@
 """
 AI service for generating medical responses using Groq API.
 """
+# Import AsyncOpenAI client for making async API calls
 from openai import AsyncOpenAI
+# Import logging module for application logging
 import logging
+# Import configuration variables for Groq API
 from app.core.config import GROQ_API_KEY, GROQ_BASE_URL, GROQ_MODEL, AI_TEMPERATURE, AI_MAX_TOKENS
+# Import text processing utility to clean markdown formatting
 from app.utils.text_processing import clean_markdown_formatting
 
+# Create logger instance for this module
 logger = logging.getLogger(__name__)
 
 # System prompt that defines Pulse AI's persona and behavior
+# This prompt instructs the AI on how to respond as a medical professional
 SYSTEM_PROMPT = """You are Pulse AI, a professional medical doctor providing clinical guidance. Speak like a real doctor - concise, direct, and clinical.
 
 CRITICAL RULES:
@@ -43,15 +49,22 @@ This is informational only and not a substitute for professional medical evaluat
 Keep responses under 200 words. Be direct, professional, and doctor-like - not conversational or lengthy."""
 
 # Initialize Groq (OpenAI-compatible) client
+# Check if API key is configured
 if not GROQ_API_KEY:
+    # Log error if API key is missing
     logger.error("GROQ_API_KEY environment variable is not set")
+    # Raise ValueError to prevent application from starting without API key
     raise ValueError("GROQ_API_KEY environment variable is required")
 
+# Create AsyncOpenAI client instance with Groq configuration
 openai_client = AsyncOpenAI(
+    # Set API key from environment variable
     api_key=GROQ_API_KEY,
+    # Set base URL to Groq API endpoint
     base_url=GROQ_BASE_URL,
 )
 
+# Async function to generate medical response from user message
 async def generate_medical_response(user_message: str) -> str:
     """
     Generates a medical response using Groq API.
@@ -65,23 +78,38 @@ async def generate_medical_response(user_message: str) -> str:
     Raises:
         Exception: If API call fails
     """
+    # Wrap API call in try-except for error handling
     try:
+        # Make async API call to Groq (OpenAI-compatible) API
         response = await openai_client.chat.completions.create(
+            # Specify model to use (from config)
             model=GROQ_MODEL,
+            # Provide conversation messages
             messages=[
+                # System message with AI instructions
                 {"role": "system", "content": SYSTEM_PROMPT},
+                # User message with patient input
                 {"role": "user", "content": user_message}
             ],
+            # Set temperature for response creativity (from config)
             temperature=AI_TEMPERATURE,
+            # Set maximum tokens for response length (from config)
             max_tokens=AI_MAX_TOKENS
         )
         
+        # Extract AI response text from API response
+        # Access first choice's message content
         ai_response_text = response.choices[0].message.content
-        # Clean markdown formatting from response
+        # Clean markdown formatting from response using utility function
         ai_response_text = clean_markdown_formatting(ai_response_text)
+        # Log successful response generation
         logger.info("AI response generated successfully")
+        # Return cleaned response text
         return ai_response_text
         
+    # Catch any exceptions during API call
     except Exception as e:
+        # Log error with details
         logger.error(f"Error calling Groq API: {str(e)}")
+        # Raise new exception with descriptive message
         raise Exception(f"Error generating AI response: {str(e)}")

@@ -103,7 +103,7 @@ Pulse_AI/
 
 1. **Navigate to backend directory:**
    ```bash
-   cd backend
+   cd Server_Side
    ```
 
 2. **Create a virtual environment (recommended):**
@@ -156,7 +156,7 @@ Pulse_AI/
 
 1. **Navigate to frontend directory:**
    ```bash
-   cd frontend
+   cd Client_Side
    ```
 
 2. **Install Node.js dependencies:**

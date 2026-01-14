@@ -1,39 +1,67 @@
 {
+  // Package name for npm registry
   "name": "pulse-ai-frontend",
+  // Package version number
   "version": "1.0.0",
+  // Mark package as private to prevent accidental publishing
   "private": true,
+  // Production dependencies required for the application
   "dependencies": {
+    // React library for building UI components
     "react": "^18.2.0",
+    // React DOM library for rendering React components
     "react-dom": "^18.2.0",
+    // React Scripts for build tooling and development server
     "react-scripts": "5.0.1",
+    // Axios library for making HTTP requests
     "axios": "^1.6.2"
   },
+  // NPM scripts for running common tasks
   "scripts": {
+    // Start development server with hot reload
     "start": "react-scripts start",
+    // Build production-ready bundle
     "build": "react-scripts build",
+    // Run test suite
     "test": "react-scripts test",
+    // Eject from create-react-app (irreversible, exposes config)
     "eject": "react-scripts eject"
   },
+  // ESLint configuration for code linting
   "eslintConfig": {
+    // Extend React app's default ESLint rules
     "extends": [
       "react-app"
     ]
   },
+  // Browserslist configuration for browser compatibility
   "browserslist": {
+    // Production browser targets
     "production": [
+      // Support browsers with >0.2% market share
       ">0.2%",
+      // Exclude dead browsers
       "not dead",
+      // Exclude Opera Mini
       "not op_mini all"
     ],
+    // Development browser targets
     "development": [
+      // Support latest Chrome version
       "last 1 chrome version",
+      // Support latest Firefox version
       "last 1 firefox version",
+      // Support latest Safari version
       "last 1 safari version"
     ]
   },
+  // Development dependencies (not included in production build)
   "devDependencies": {
+    // Tailwind CSS utility framework
     "tailwindcss": "^3.3.6",
+    // PostCSS for CSS processing
     "postcss": "^8.4.32",
+    // Autoprefixer for vendor prefixes
     "autoprefixer": "^10.4.16"
   }
 }

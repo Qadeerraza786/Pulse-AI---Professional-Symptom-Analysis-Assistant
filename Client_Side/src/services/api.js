@@ -1,8 +1,10 @@
 /**
  * API service for making HTTP requests to the backend.
  */
+// Import axios library for making HTTP requests
 import axios from 'axios';
 
+// Set base URL for API requests (backend server address)
 const API_BASE_URL = 'http://localhost:8000';
 
 /**
@@ -13,16 +15,27 @@ const API_BASE_URL = 'http://localhost:8000';
  * @param {string} [patientInput.message] - Additional information
  * @returns {Promise<Object>} Chat session response
  */
+// Export async function to create a new chat session
 export const createChat = async (patientInput) => {
+  // Wrap API call in try-catch for error handling
   try {
+    // Make POST request to /api/chat endpoint with patient input data
     const response = await axios.post(`${API_BASE_URL}/api/chat`, patientInput);
+    // Return response data (chat session object)
     return response.data;
+  // Catch any errors from the API call
   } catch (error) {
+    // Check if error has response data (server responded with error)
     if (error.response) {
+      // Throw error with server's error message or default message
       throw new Error(error.response.data.detail || 'An error occurred while processing your request');
+    // Check if error is due to no response (network error)
     } else if (error.request) {
+      // Throw error indicating connection problem
       throw new Error('Unable to connect to the server. Please check if the backend is running.');
+    // Handle any other unexpected errors
     } else {
+      // Throw generic error message
       throw new Error('An unexpected error occurred');
     }
   }
@@ -32,16 +45,27 @@ export const createChat = async (patientInput) => {
  * Fetches all chat sessions from the database.
  * @returns {Promise<Array>} Array of chat sessions
  */
+// Export async function to fetch all chat sessions
 export const fetchChatHistory = async () => {
+  // Wrap API call in try-catch for error handling
   try {
+    // Make GET request to /api/sessions endpoint
     const response = await axios.get(`${API_BASE_URL}/api/sessions`);
+    // Return response data (array of chat sessions)
     return response.data;
+  // Catch any errors from the API call
   } catch (error) {
+    // Check if error has response data (server responded with error)
     if (error.response) {
+      // Throw error with server's error message or default message
       throw new Error(error.response.data.detail || 'An error occurred');
+    // Check if error is due to no response (network error)
     } else if (error.request) {
+      // Throw error indicating connection problem
       throw new Error('Unable to connect to the server. Please check if the backend is running.');
+    // Handle any other unexpected errors
     } else {
+      // Throw generic error message
       throw new Error('An unexpected error occurred while fetching chat history');
     }
   }
@@ -52,16 +76,27 @@ export const fetchChatHistory = async () => {
  * @param {string} sessionId - Session ID
  * @returns {Promise<Object>} Chat session data
  */
+// Export async function to fetch a specific chat session by ID
 export const fetchChatSession = async (sessionId) => {
+  // Wrap API call in try-catch for error handling
   try {
+    // Make GET request to /api/sessions/{sessionId} endpoint
     const response = await axios.get(`${API_BASE_URL}/api/sessions/${sessionId}`);
+    // Return response data (chat session object)
     return response.data;
+  // Catch any errors from the API call
   } catch (error) {
+    // Check if error has response data (server responded with error)
     if (error.response) {
+      // Throw error with server's error message or default message
       throw new Error(error.response.data.detail || 'An error occurred');
+    // Check if error is due to no response (network error)
     } else if (error.request) {
+      // Throw error indicating connection problem
       throw new Error('Unable to connect to the server. Please check if the backend is running.');
+    // Handle any other unexpected errors
     } else {
+      // Throw generic error message
       throw new Error('An unexpected error occurred while fetching chat session');
     }
   }
@@ -75,16 +110,27 @@ export const fetchChatSession = async (sessionId) => {
  * @param {boolean} [updates.pinned] - Pin status
  * @returns {Promise<Object>} Updated chat session
  */
+// Export async function to update a chat session
 export const updateChatSession = async (sessionId, updates) => {
+  // Wrap API call in try-catch for error handling
   try {
+    // Make PATCH request to /api/sessions/{sessionId} endpoint with update data
     const response = await axios.patch(`${API_BASE_URL}/api/sessions/${sessionId}`, updates);
+    // Return response data (updated chat session object)
     return response.data;
+  // Catch any errors from the API call
   } catch (error) {
+    // Check if error has response data (server responded with error)
     if (error.response) {
+      // Throw error with server's error message or default message
       throw new Error(error.response.data.detail || 'An error occurred');
+    // Check if error is due to no response (network error)
     } else if (error.request) {
+      // Throw error indicating connection problem
       throw new Error('Unable to connect to the server. Please check if the backend is running.');
+    // Handle any other unexpected errors
     } else {
+      // Throw generic error message
       throw new Error('An unexpected error occurred while updating chat');
     }
   }
@@ -95,16 +141,27 @@ export const updateChatSession = async (sessionId, updates) => {
  * @param {string} sessionId - Session ID
  * @returns {Promise<Object>} Deletion confirmation
  */
+// Export async function to delete a chat session
 export const deleteChatSession = async (sessionId) => {
+  // Wrap API call in try-catch for error handling
   try {
+    // Make DELETE request to /api/sessions/{sessionId} endpoint
     const response = await axios.delete(`${API_BASE_URL}/api/sessions/${sessionId}`);
+    // Return response data (deletion confirmation object)
     return response.data;
+  // Catch any errors from the API call
   } catch (error) {
+    // Check if error has response data (server responded with error)
     if (error.response) {
+      // Throw error with server's error message or default message
       throw new Error(error.response.data.detail || 'An error occurred');
+    // Check if error is due to no response (network error)
     } else if (error.request) {
+      // Throw error indicating connection problem
       throw new Error('Unable to connect to the server. Please check if the backend is running.');
+    // Handle any other unexpected errors
     } else {
+      // Throw generic error message
       throw new Error('An unexpected error occurred while deleting chat');
     }
   }
