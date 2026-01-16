@@ -8,7 +8,7 @@ from pydantic import ConfigDict
 # Import Optional and List from typing for optional fields and lists
 from typing import Optional, List
 # Import datetime for timestamp fields
-from datetime import datetime
+from datetime import datetime, timezone
 # Import ObjectId from bson for MongoDB document IDs
 from bson import ObjectId
 
@@ -65,12 +65,12 @@ class PatientInput(BaseModel):
         use_enum_values=True
     )
     
-    # Patient name field - required, minimum 1 character
-    name: str = Field(..., min_length=1, description="Patient's full name")
-    # Medical problem field - optional, can be None
-    problem: Optional[str] = Field(None, description="Primary medical problem or symptom (optional)")
-    # Additional message field - required, minimum 1 character
-    message: str = Field(..., min_length=1, description="Message describing the medical issue or symptoms")
+    # Patient name field - required, minimum 1 character, maximum 100 characters
+    name: str = Field(..., min_length=1, max_length=100, description="Patient's full name")
+    # Medical problem field - optional, can be None, maximum 200 characters
+    problem: Optional[str] = Field(None, max_length=200, description="Primary medical problem or symptom (optional)")
+    # Additional message field - required, minimum 1 character, maximum 2000 characters
+    message: str = Field(..., min_length=1, max_length=2000, description="Message describing the medical issue or symptoms")
     # Session ID field - optional, for continuing existing conversation
     session_id: Optional[str] = Field(None, description="Session ID to continue existing conversation (optional)")
 
@@ -112,7 +112,7 @@ class ChatSession(BaseModel):
     # Conversation messages array - stores full conversation history
     messages: Optional[List[dict]] = Field(default_factory=list, description="Full conversation history with structured messages")
     # Timestamp field - defaults to current UTC time if not provided
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Session creation timestamp")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Session creation timestamp")
     # Pinned status field - optional, defaults to False
     pinned: Optional[bool] = Field(default=False, description="Whether this chat is pinned")
 

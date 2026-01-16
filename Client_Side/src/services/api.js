@@ -7,8 +7,20 @@ import axios from 'axios';
 // Set base URL for API requests (backend server address)
 const API_BASE_URL = 'http://localhost:8000';
 
+// Request timeout in milliseconds (30 seconds)
+const REQUEST_TIMEOUT = 30000;
+
+// Create axios instance with default configuration
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: REQUEST_TIMEOUT,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 /**
- * Creates a new chat session with patient input.
+ * Creates a new chat session with patient input (non-streaming).
  * @param {Object} patientInput - Patient input data
  * @param {string} patientInput.name - Patient's name
  * @param {string} patientInput.problem - Medical problem description
@@ -20,7 +32,8 @@ export const createChat = async (patientInput) => {
   // Wrap API call in try-catch for error handling
   try {
     // Make POST request to /api/chat endpoint with patient input data
-    const response = await axios.post(`${API_BASE_URL}/api/chat`, patientInput);
+    // Use apiClient with timeout configuration
+    const response = await apiClient.post('/api/chat', patientInput);
     // Return response data (chat session object)
     return response.data;
   // Catch any errors from the API call
@@ -29,6 +42,10 @@ export const createChat = async (patientInput) => {
     if (error.response) {
       // Throw error with server's error message or default message
       throw new Error(error.response.data.detail || 'An error occurred while processing your request');
+    // Check if error is due to timeout
+    } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      // Throw error indicating timeout
+      throw new Error('Request timed out. Please check your connection and try again.');
     // Check if error is due to no response (network error)
     } else if (error.request) {
       // Throw error indicating connection problem
@@ -50,7 +67,8 @@ export const fetchChatHistory = async () => {
   // Wrap API call in try-catch for error handling
   try {
     // Make GET request to /api/sessions endpoint
-    const response = await axios.get(`${API_BASE_URL}/api/sessions`);
+    // Use apiClient with timeout configuration
+    const response = await apiClient.get('/api/sessions');
     // Return response data (array of chat sessions)
     return response.data;
   // Catch any errors from the API call
@@ -59,6 +77,10 @@ export const fetchChatHistory = async () => {
     if (error.response) {
       // Throw error with server's error message or default message
       throw new Error(error.response.data.detail || 'An error occurred');
+    // Check if error is due to timeout
+    } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      // Throw error indicating timeout
+      throw new Error('Request timed out. Please check your connection and try again.');
     // Check if error is due to no response (network error)
     } else if (error.request) {
       // Throw error indicating connection problem
@@ -81,7 +103,8 @@ export const fetchChatSession = async (sessionId) => {
   // Wrap API call in try-catch for error handling
   try {
     // Make GET request to /api/sessions/{sessionId} endpoint
-    const response = await axios.get(`${API_BASE_URL}/api/sessions/${sessionId}`);
+    // Use apiClient with timeout configuration
+    const response = await apiClient.get(`/api/sessions/${sessionId}`);
     // Return response data (chat session object)
     return response.data;
   // Catch any errors from the API call
@@ -90,6 +113,10 @@ export const fetchChatSession = async (sessionId) => {
     if (error.response) {
       // Throw error with server's error message or default message
       throw new Error(error.response.data.detail || 'An error occurred');
+    // Check if error is due to timeout
+    } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      // Throw error indicating timeout
+      throw new Error('Request timed out. Please check your connection and try again.');
     // Check if error is due to no response (network error)
     } else if (error.request) {
       // Throw error indicating connection problem
@@ -115,7 +142,8 @@ export const updateChatSession = async (sessionId, updates) => {
   // Wrap API call in try-catch for error handling
   try {
     // Make PATCH request to /api/sessions/{sessionId} endpoint with update data
-    const response = await axios.patch(`${API_BASE_URL}/api/sessions/${sessionId}`, updates);
+    // Use apiClient with timeout configuration
+    const response = await apiClient.patch(`/api/sessions/${sessionId}`, updates);
     // Return response data (updated chat session object)
     return response.data;
   // Catch any errors from the API call
@@ -124,6 +152,10 @@ export const updateChatSession = async (sessionId, updates) => {
     if (error.response) {
       // Throw error with server's error message or default message
       throw new Error(error.response.data.detail || 'An error occurred');
+    // Check if error is due to timeout
+    } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      // Throw error indicating timeout
+      throw new Error('Request timed out. Please check your connection and try again.');
     // Check if error is due to no response (network error)
     } else if (error.request) {
       // Throw error indicating connection problem
@@ -146,7 +178,8 @@ export const deleteChatSession = async (sessionId) => {
   // Wrap API call in try-catch for error handling
   try {
     // Make DELETE request to /api/sessions/{sessionId} endpoint
-    const response = await axios.delete(`${API_BASE_URL}/api/sessions/${sessionId}`);
+    // Use apiClient with timeout configuration
+    const response = await apiClient.delete(`/api/sessions/${sessionId}`);
     // Return response data (deletion confirmation object)
     return response.data;
   // Catch any errors from the API call

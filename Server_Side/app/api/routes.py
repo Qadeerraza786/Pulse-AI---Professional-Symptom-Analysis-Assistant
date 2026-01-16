@@ -3,8 +3,10 @@ API routes for chat and session management.
 """
 # Import APIRouter from FastAPI to create route groups
 from fastapi import APIRouter, HTTPException
+# Import json for JSON encoding
+import json
 # Import datetime for timestamp generation
-from datetime import datetime
+from datetime import datetime, timezone
 # Import ObjectId from bson for MongoDB document ID validation
 from bson import ObjectId
 # Import logging module for application logging
@@ -23,8 +25,12 @@ from app.models.schemas import (
 )
 # Import database connection function
 from app.core.database import get_database
-# Import AI service function to generate medical responses
+# Import AI service functions to generate medical responses
 from app.services.ai_service import generate_medical_response
+# Import text processing utility for markdown cleaning
+from app.utils.text_processing import clean_markdown_formatting
+# Import configuration for validation
+from app.core.config import MAX_NAME_LENGTH, MAX_PROBLEM_LENGTH, MAX_MESSAGE_LENGTH
 
 # Create logger instance for this module
 logger = logging.getLogger(__name__)
@@ -49,13 +55,38 @@ async def chat_with_ai(patient_input: PatientInput):
             # Raise HTTP 500 error if database is not available
             raise HTTPException(status_code=500, detail="Database connection not available")
         
+        # Input validation and sanitization
+        # Validate and sanitize name
+        patient_name = patient_input.name.strip()
+        if not patient_name or len(patient_name) > MAX_NAME_LENGTH:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Name must be between 1 and {MAX_NAME_LENGTH} characters"
+            )
+        
+        # Validate and sanitize message
+        patient_message = patient_input.message.strip()
+        if not patient_message or len(patient_message) > MAX_MESSAGE_LENGTH:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Message must be between 1 and {MAX_MESSAGE_LENGTH} characters"
+            )
+        
+        # Validate and sanitize problem (optional)
+        patient_problem = patient_input.problem.strip() if patient_input.problem else None
+        if patient_problem and len(patient_problem) > MAX_PROBLEM_LENGTH:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Problem description must not exceed {MAX_PROBLEM_LENGTH} characters"
+            )
+        
         # Construct user message from patient input - start with name and required message
         # Build message with name first
-        user_message = f"Patient Name: {patient_input.name}\nMessage: {patient_input.message}"
+        user_message = f"Patient Name: {patient_name}\nMessage: {patient_message}"
         # Add problem/disease if provided (optional)
-        if patient_input.problem:
+        if patient_problem:
             # Insert problem between name and message
-            user_message = f"Patient Name: {patient_input.name}\nProblem: {patient_input.problem}\nMessage: {patient_input.message}"
+            user_message = f"Patient Name: {patient_name}\nProblem: {patient_problem}\nMessage: {patient_message}"
         
         # Initialize conversation history and session variables
         conversation_history = []
@@ -91,11 +122,14 @@ async def chat_with_ai(patient_input: PatientInput):
             # Log successful AI response generation
             logger.info(f"AI response generated for patient: {patient_input.name} with session memory")
         # Catch any exceptions from AI service
+        except HTTPException:
+            # Re-raise HTTP exceptions as-is
+            raise
         except Exception as e:
-            # Log error from AI service
-            logger.error(f"Error calling AI service: {str(e)}")
-            # Raise HTTP 500 error with error message
-            raise HTTPException(status_code=500, detail=str(e))
+            # Log error from AI service with full context
+            logger.error(f"Error calling AI service: {str(e)}", exc_info=True)
+            # Raise HTTP 500 error with generic message (security: don't expose internal details)
+            raise HTTPException(status_code=500, detail="Failed to generate AI response. Please try again.")
         
         # Add new user message to conversation history
         conversation_history.append({"role": "user", "content": user_message})
@@ -104,18 +138,18 @@ async def chat_with_ai(patient_input: PatientInput):
         
         # Prepare session data
         session_data = {
-            # Set patient name from input
-            "patient_name": patient_input.name,
+            # Set patient name from input (sanitized)
+            "patient_name": patient_name,
             # Set problem description from input (can be None, optional)
-            "problem": patient_input.problem or "No specific disease mentioned",
-            # Set additional info from input (required message)
-            "additional_info": patient_input.message,
+            "problem": patient_problem or "No specific disease mentioned",
+            # Set additional info from input (required message, sanitized)
+            "additional_info": patient_message,
             # Set AI response text (for backward compatibility)
             "ai_response": ai_response_text,
             # Set conversation messages array (structured session memory)
             "messages": conversation_history,
-            # Set current UTC timestamp
-            "timestamp": datetime.utcnow()
+            # Set current UTC timestamp (using timezone-aware datetime)
+            "timestamp": datetime.now(timezone.utc)
         }
         
         # Save or update session in database
@@ -162,11 +196,14 @@ async def chat_with_ai(patient_input: PatientInput):
     except HTTPException:
         raise
     # Catch any other unexpected exceptions
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
-        # Log unexpected error with full details
-        logger.error(f"Unexpected error in chat endpoint: {str(e)}")
-        # Raise HTTP 500 error with error message
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        # Log unexpected error with full details (for debugging)
+        logger.error(f"Unexpected error in chat endpoint: {str(e)}", exc_info=True)
+        # Raise HTTP 500 error with generic message (security: don't expose internal details)
+        raise HTTPException(status_code=500, detail="An unexpected error occurred. Please try again later.")
 
 # Define GET endpoint at "/sessions" that returns list of ChatSessionResponse
 @router.get("/sessions", response_model=list[ChatSessionResponse])
@@ -187,8 +224,10 @@ async def get_all_sessions():
         # Retrieve all documents, sorted by pinned status first, then by timestamp
         # Sort by pinned descending (-1) so pinned items appear first
         # Then sort by timestamp descending (-1) so newest appear first
+        # Performance: Use compound index created in database.py
         cursor = db.chat_sessions.find().sort([("pinned", -1), ("timestamp", -1)])
         # Convert cursor to list with maximum 100 documents
+        # TODO: Implement pagination for better performance with large datasets
         sessions = await cursor.to_list(length=100)
         
         # Convert to response objects - initialize empty list

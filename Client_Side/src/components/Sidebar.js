@@ -228,6 +228,7 @@ function Sidebar({ chatHistory, loadingHistory, onNewChat, onSelectChat, onChatU
             e.stopPropagation();
             // Call onNewChat handler if provided
             if (onNewChat) {
+              // Call handler to reset chat
               onNewChat();
             } else {
               // Log warning if handler is not provided
@@ -235,7 +236,7 @@ function Sidebar({ chatHistory, loadingHistory, onNewChat, onSelectChat, onChatU
             }
           }}
           // Apply Tailwind classes for styling with hover effects, light gray border, and centered content
-          className="w-full flex items-center justify-center space-x-3 px-3 py-2 mb-2 rounded-lg border border-neutral-700 hover:bg-neutral-800 text-gray-100 hover:text-white transition-colors cursor-pointer active:bg-neutral-700"
+          className="w-full flex items-center justify-center space-x-3 px-3 py-2 mb-2 rounded-lg border border-neutral-700 hover:bg-neutral-800 text-gray-100 hover:text-white transition-colors cursor-pointer active:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           // Ensure button is accessible
           type="button"
           aria-label="Start a new chat"

@@ -24,6 +24,7 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 DATABASE_NAME = "pulse_ai"
 
 # CORS Configuration - list of allowed origins for cross-origin requests
+# In production, replace with actual frontend domain
 ALLOWED_ORIGINS = [
     # Allow requests from React development server on port 3000
     "http://localhost:3000",
@@ -33,9 +34,21 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000"
 ]
 
+# Security Configuration
+# Maximum length for user input fields
+MAX_NAME_LENGTH = 100
+MAX_PROBLEM_LENGTH = 200
+MAX_MESSAGE_LENGTH = 2000
+
+# Request timeout in seconds
+REQUEST_TIMEOUT = 30
+
+# Rate limiting configuration (requests per minute per IP)
+RATE_LIMIT_PER_MINUTE = 60
+
 # AI Configuration
-# Set temperature for AI responses (0.1 = deterministic, precise doctor-like behavior)
-AI_TEMPERATURE = 0.1
+# Set temperature for AI responses (0.2 = deterministic, precise doctor-like behavior)
+AI_TEMPERATURE = 0.2
 # Set maximum tokens for AI response (600 tokens = enough for thorough clinical questions and guidance)
 AI_MAX_TOKENS = 600
 # Set top p for AI response (0.9 = allows slight variation in phrasing, keeping responses natural)

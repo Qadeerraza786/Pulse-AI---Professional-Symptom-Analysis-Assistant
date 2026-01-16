@@ -31,6 +31,7 @@ app = FastAPI(
 )
 
 # Configure CORS middleware to allow cross-origin requests
+# Security: Restrict to specific methods and headers instead of wildcards
 app.add_middleware(
     # Use CORSMiddleware class
     CORSMiddleware,
@@ -38,10 +39,12 @@ app.add_middleware(
     allow_origins=ALLOWED_ORIGINS,
     # Allow credentials (cookies, authorization headers) in requests
     allow_credentials=True,
-    # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
-    allow_methods=["*"],
-    # Allow all headers in requests
-    allow_headers=["*"],
+    # Allow only necessary HTTP methods (security best practice)
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    # Allow only necessary headers (security best practice)
+    allow_headers=["Content-Type", "Authorization", "Accept"],
+    # Expose only necessary headers to client
+    expose_headers=["Content-Type"],
 )
 
 # Include API routes from router into the main application

@@ -15,6 +15,8 @@ function App() {
   const [currentChat, setCurrentChat] = useState(null);
   // State variable to track loading state for chat history
   const [loadingHistory, setLoadingHistory] = useState(true);
+  // State variable to force reset of ChatComponent (increment to trigger reset)
+  const [chatResetKey, setChatResetKey] = useState(0);
 
   // Function to handle new chat creation
   const handleNewChat = () => {
@@ -22,6 +24,9 @@ function App() {
     console.log('New chat button clicked');
     // Reset current chat to start fresh
     setCurrentChat(null);
+    // Force ChatComponent reset by incrementing reset key
+    // This ensures the component resets even if currentChat was already null
+    setChatResetKey((prevKey) => prevKey + 1);
   };
 
   // Function to handle chat selection from history
@@ -76,9 +81,7 @@ function App() {
     } catch (err) {
       // Handle errors from API call
       console.error('Error updating chat:', err.message);
-      // Show alert to user
-      alert('Failed to update chat. Please try again.');
-      // Re-throw error to be handled by caller
+      // Re-throw error to be handled by caller (UI will show error message)
       throw err;
     }
   };
@@ -99,9 +102,7 @@ function App() {
     } catch (err) {
       // Handle errors from API call
       console.error('Error deleting chat:', err.message);
-      // Show alert to user
-      alert('Failed to delete chat. Please try again.');
-      // Re-throw error to be handled by caller
+      // Re-throw error to be handled by caller (UI will show error message)
       throw err;
     }
   };
@@ -133,6 +134,8 @@ function App() {
           currentChat={currentChat}
           // Pass function to add chat to history
           onChatComplete={addToHistory}
+          // Pass reset key to force component reset when new chat is created
+          key={chatResetKey}
         />
       </div>
     </div>

@@ -206,10 +206,30 @@ function ChatComponent({ currentChat, onChatComplete }) {
         chatData.session_id = currentSessionId;
       }
       
-      const result = await createChat(chatData);
-      
       // Check if this is the first submission (initial chat setup)
       const isFirstSubmission = !hasInitialSubmission;
+      
+      // Add user message to messages array immediately
+      // For display, show only the message content (not the formatted version sent to API)
+      const userMessageContent = message.trim();
+      const userMessage = { 
+        type: 'user', 
+        content: userMessageContent, 
+        name: hasInitialSubmission ? initialPatientInfo.name : (name.trim() || 'Anonymous')
+      };
+      
+      // Add user message to messages
+      setMessages((prev) => [...prev, userMessage]);
+      
+      // Call non-streaming API to get AI response
+      const response = await createChat(chatData);
+      
+      // Extract AI response and session ID from response
+      const aiResponse = response.ai_response || '';
+      const sessionId = response.id || response._id || null;
+      
+      // Add AI message to messages
+      setMessages((prev) => [...prev, { type: 'ai', content: aiResponse }]);
       
       // If this is the first submission, store initial patient info and hide Name/Disease fields
       if (isFirstSubmission) {
@@ -220,30 +240,16 @@ function ChatComponent({ currentChat, onChatComplete }) {
         });
         // Mark that initial submission has been made
         setHasInitialSubmission(true);
-        // Store session ID from result for future messages
-        setCurrentSessionId(result.id);
+        // Store session ID for future messages
+        setCurrentSessionId(sessionId);
       } else {
         // Update session ID if it changed (shouldn't happen, but just in case)
-        if (result.id && result.id !== currentSessionId) {
-          setCurrentSessionId(result.id);
+        if (sessionId && sessionId !== currentSessionId) {
+          setCurrentSessionId(sessionId);
         }
       }
       
-      // Add user message and AI response to messages array
-      // For display, show only the message content (not the formatted version sent to API)
-      const userMessageContent = message.trim();
-      const userMessage = { 
-        type: 'user', 
-        content: userMessageContent, 
-        name: hasInitialSubmission ? initialPatientInfo.name : (name.trim() || 'Anonymous')
-      };
-      const aiMessage = { 
-        type: 'ai', 
-        content: result.ai_response 
-      };
-      setMessages((prev) => [...prev, userMessage, aiMessage]);
-      
-      // Scroll to bottom after adding new messages
+      // Scroll to bottom to show latest messages
       setTimeout(() => {
         if (messagesContainerRef.current) {
           messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
@@ -255,17 +261,13 @@ function ChatComponent({ currentChat, onChatComplete }) {
         onChatComplete({
           problem: problem.trim() || message.trim().substring(0, 50),
           name: name.trim() || 'Anonymous',
-          ai_response: result.ai_response,
-          id: result.id
+          ai_response: aiResponse,
+          id: sessionId
         });
       }
       
       // Clear message field after submission (but keep name/problem if first submission)
       setMessage('');
-      // Only clear name/problem if this was NOT the first submission
-      if (!isFirstSubmission) {
-        // For follow-up messages, we don't need to clear anything else
-      }
       
     } catch (err) {
       // Handle errors from API call
