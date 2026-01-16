@@ -37,7 +37,8 @@ router = APIRouter(prefix="/api", tags=["api"])
 # Async function to handle chat requests with patient input
 async def chat_with_ai(patient_input: PatientInput):
     """
-    Receives patient input, generates AI medical response, and saves session to database.
+    Receives patient input, generates AI medical response with structured session memory, and saves/updates session to database.
+    Supports continuing existing conversations via session_id.
     """
     # Wrap code in try-except for error handling
     try:
@@ -48,19 +49,47 @@ async def chat_with_ai(patient_input: PatientInput):
             # Raise HTTP 500 error if database is not available
             raise HTTPException(status_code=500, detail="Database connection not available")
         
-        # Construct user message from patient input - start with name and problem
-        user_message = f"Patient Name: {patient_input.name}\nProblem: {patient_input.problem}"
-        # Add additional information if provided
-        if patient_input.message:
-            # Append additional message to user message
-            user_message += f"\nAdditional Information: {patient_input.message}"
+        # Construct user message from patient input - start with name and required message
+        # Build message with name first
+        user_message = f"Patient Name: {patient_input.name}\nMessage: {patient_input.message}"
+        # Add problem/disease if provided (optional)
+        if patient_input.problem:
+            # Insert problem between name and message
+            user_message = f"Patient Name: {patient_input.name}\nProblem: {patient_input.problem}\nMessage: {patient_input.message}"
         
-        # Generate AI response - wrap in try-except for AI service errors
+        # Initialize conversation history and session variables
+        conversation_history = []
+        existing_session = None
+        session_id = None
+        
+        # Check if continuing an existing session
+        if patient_input.session_id:
+            # Validate session ID format
+            if not ObjectId.is_valid(patient_input.session_id):
+                # Raise HTTP 400 error for invalid ID format
+                raise HTTPException(status_code=400, detail="Invalid session ID format")
+            
+            # Fetch existing session from database
+            existing_session = await db.chat_sessions.find_one({"_id": ObjectId(patient_input.session_id)})
+            
+            # Check if session exists
+            if existing_session is None:
+                # Raise HTTP 404 error if session doesn't exist
+                raise HTTPException(status_code=404, detail="Session not found")
+            
+            # Get conversation history from existing session (structured session memory)
+            conversation_history = existing_session.get("messages", [])
+            # Set session ID for update operation
+            session_id = patient_input.session_id
+            # Log that we're continuing an existing session
+            logger.info(f"Continuing session {session_id} with {len(conversation_history)} previous messages")
+        
+        # Generate AI response with conversation history - wrap in try-except for AI service errors
         try:
-            # Call AI service to generate medical response
-            ai_response_text = await generate_medical_response(user_message)
+            # Call AI service to generate medical response with structured session memory
+            ai_response_text = await generate_medical_response(user_message, conversation_history)
             # Log successful AI response generation
-            logger.info(f"AI response generated for patient: {patient_input.name}")
+            logger.info(f"AI response generated for patient: {patient_input.name} with session memory")
         # Catch any exceptions from AI service
         except Exception as e:
             # Log error from AI service
@@ -68,43 +97,62 @@ async def chat_with_ai(patient_input: PatientInput):
             # Raise HTTP 500 error with error message
             raise HTTPException(status_code=500, detail=str(e))
         
-        # Create chat session document using Pydantic model
-        chat_session = ChatSession(
-            # Set patient name from input
-            patient_name=patient_input.name,
-            # Set problem description from input
-            problem=patient_input.problem,
-            # Set additional info from input (can be None)
-            additional_info=patient_input.message,
-            # Set AI response text
-            ai_response=ai_response_text,
-            # Set current UTC timestamp
-            timestamp=datetime.utcnow()
-        )
+        # Add new user message to conversation history
+        conversation_history.append({"role": "user", "content": user_message})
+        # Add AI response to conversation history
+        conversation_history.append({"role": "assistant", "content": ai_response_text})
         
-        # Save to database - convert Pydantic model to dictionary
-        # Use by_alias=True to use field aliases (like "_id")
-        # Use exclude_none=True to exclude None values
-        session_dict = chat_session.model_dump(by_alias=True, exclude_none=True)
-        # Insert document into chat_sessions collection
-        result = await db.chat_sessions.insert_one(session_dict)
-        # Log successful database save with inserted document ID
-        logger.info(f"Chat session saved to database with ID: {result.inserted_id}")
+        # Prepare session data
+        session_data = {
+            # Set patient name from input
+            "patient_name": patient_input.name,
+            # Set problem description from input (can be None, optional)
+            "problem": patient_input.problem or "No specific disease mentioned",
+            # Set additional info from input (required message)
+            "additional_info": patient_input.message,
+            # Set AI response text (for backward compatibility)
+            "ai_response": ai_response_text,
+            # Set conversation messages array (structured session memory)
+            "messages": conversation_history,
+            # Set current UTC timestamp
+            "timestamp": datetime.utcnow()
+        }
+        
+        # Save or update session in database
+        if existing_session:
+            # Update existing session with new messages
+            await db.chat_sessions.update_one(
+                {"_id": ObjectId(session_id)},
+                {"$set": session_data}
+            )
+            # Log successful database update
+            logger.info(f"Chat session updated in database with ID: {session_id}")
+            # Use existing session ID for response
+            result_id = session_id
+        else:
+            # Insert new document into chat_sessions collection
+            result = await db.chat_sessions.insert_one(session_data)
+            # Log successful database save with inserted document ID
+            logger.info(f"Chat session saved to database with ID: {result.inserted_id}")
+            # Use new session ID for response
+            result_id = str(result.inserted_id)
         
         # Create response object for API response
         response_data = ChatSessionResponse(
-            # Copy patient name from chat session
-            patient_name=chat_session.patient_name,
-            # Copy problem from chat session
-            problem=chat_session.problem,
-            # Copy additional info from chat session
-            additional_info=chat_session.additional_info,
-            # Copy AI response from chat session
-            ai_response=chat_session.ai_response,
-            # Copy timestamp from chat session
-            timestamp=chat_session.timestamp,
+            # Copy patient name from session data
+            patient_name=session_data["patient_name"],
+            # Copy problem from session data
+            problem=session_data["problem"],
+            # Copy additional info from session data
+            additional_info=session_data["additional_info"],
+            # Copy AI response from session data
+            ai_response=session_data["ai_response"],
+            # Copy messages array from session data (structured session memory)
+            messages=session_data["messages"],
+            # Copy timestamp from session data
+            timestamp=session_data["timestamp"],
             # Convert ObjectId to string for JSON serialization
-            id=str(result.inserted_id)
+            id=str(result_id)
         )
         
         # Return response data to client
@@ -157,6 +205,8 @@ async def get_all_sessions():
                 additional_info=session.get("additional_info"),
                 # Get AI response from document
                 ai_response=session["ai_response"],
+                # Get messages array from document (structured session memory)
+                messages=session.get("messages", []),
                 # Get timestamp from document
                 timestamp=session["timestamp"],
                 # Convert ObjectId to string for JSON serialization
@@ -219,6 +269,8 @@ async def get_session_by_id(session_id: str):
             additional_info=session.get("additional_info"),
             # Get AI response from document
             ai_response=session["ai_response"],
+            # Get messages array from document (structured session memory)
+            messages=session.get("messages", []),
             # Get timestamp from document
             timestamp=session["timestamp"],
             # Convert ObjectId to string for JSON serialization
@@ -306,6 +358,8 @@ async def update_session(session_id: str, updates: ChatSessionUpdate):
             additional_info=session.get("additional_info"),
             # Get AI response from document
             ai_response=session["ai_response"],
+            # Get messages array from document (structured session memory)
+            messages=session.get("messages", []),
             # Get timestamp from document
             timestamp=session["timestamp"],
             # Convert ObjectId to string for JSON serialization

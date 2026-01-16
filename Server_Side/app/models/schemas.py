@@ -5,8 +5,8 @@ Pydantic models for data validation and serialization.
 from pydantic import BaseModel, Field
 # Import ConfigDict from Pydantic for model configuration
 from pydantic import ConfigDict
-# Import Optional from typing for optional fields
-from typing import Optional
+# Import Optional and List from typing for optional fields and lists
+from typing import Optional, List
 # Import datetime for timestamp fields
 from datetime import datetime
 # Import ObjectId from bson for MongoDB document IDs
@@ -40,6 +40,17 @@ class PyObjectId(str):
         # Raise ValueError if value is not a valid ObjectId
         raise ValueError("Invalid ObjectId")
 
+# Pydantic model for conversation message
+# This model represents a single message in the conversation history
+class Message(BaseModel):
+    """
+    Schema for a single message in conversation history.
+    """
+    # Message role field - either "user" or "assistant"
+    role: str = Field(..., description="Message role: 'user' or 'assistant'")
+    # Message content field - the actual message text
+    content: str = Field(..., description="Message content")
+
 # Pydantic model for patient input request
 # This model validates incoming patient data from API requests
 class PatientInput(BaseModel):
@@ -56,10 +67,12 @@ class PatientInput(BaseModel):
     
     # Patient name field - required, minimum 1 character
     name: str = Field(..., min_length=1, description="Patient's full name")
-    # Medical problem field - required, minimum 1 character
-    problem: str = Field(..., min_length=1, description="Primary medical problem or symptom")
-    # Additional message field - optional, can be None
-    message: Optional[str] = Field(None, description="Additional details or context about the problem")
+    # Medical problem field - optional, can be None
+    problem: Optional[str] = Field(None, description="Primary medical problem or symptom (optional)")
+    # Additional message field - required, minimum 1 character
+    message: str = Field(..., min_length=1, description="Message describing the medical issue or symptoms")
+    # Session ID field - optional, for continuing existing conversation
+    session_id: Optional[str] = Field(None, description="Session ID to continue existing conversation (optional)")
 
 # Pydantic model for AI response
 # This model represents AI-generated medical responses
@@ -94,8 +107,10 @@ class ChatSession(BaseModel):
     problem: str = Field(..., description="Primary medical problem or symptom")
     # Additional info field - optional, can be None
     additional_info: Optional[str] = Field(None, description="Additional context or details")
-    # AI response field - required
+    # AI response field - required (for backward compatibility)
     ai_response: str = Field(..., description="AI's medical diagnosis and recommendations")
+    # Conversation messages array - stores full conversation history
+    messages: Optional[List[dict]] = Field(default_factory=list, description="Full conversation history with structured messages")
     # Timestamp field - defaults to current UTC time if not provided
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Session creation timestamp")
     # Pinned status field - optional, defaults to False
@@ -121,8 +136,10 @@ class ChatSessionResponse(BaseModel):
     problem: str = Field(..., description="Primary medical problem or symptom")
     # Additional info field - optional, can be None
     additional_info: Optional[str] = Field(None, description="Additional context or details")
-    # AI response field - required
+    # AI response field - required (for backward compatibility)
     ai_response: str = Field(..., description="AI's medical diagnosis and recommendations")
+    # Conversation messages array - stores full conversation history
+    messages: Optional[List[dict]] = Field(default_factory=list, description="Full conversation history with structured messages")
     # Timestamp field - required
     timestamp: datetime = Field(..., description="Session creation timestamp")
     # Session ID field - required, as string

@@ -34,7 +34,15 @@ ALLOWED_ORIGINS = [
 ]
 
 # AI Configuration
-# Set temperature for AI responses (0.3 = more focused, less creative)
-AI_TEMPERATURE = 0.3
-# Set maximum tokens for AI response (400 tokens = ~300 words)
-AI_MAX_TOKENS = 400
+# Set temperature for AI responses (0.1 = deterministic, precise doctor-like behavior)
+AI_TEMPERATURE = 0.1
+# Set maximum tokens for AI response (600 tokens = enough for thorough clinical questions and guidance)
+AI_MAX_TOKENS = 600
+# Set top p for AI response (0.9 = allows slight variation in phrasing, keeping responses natural)
+AI_TOP_P = 0.9
+# Set frequency penalty for AI response (1.0 = avoids repeated questions)
+AI_FREQUENCY_PENALTY = 1.0
+# Set presence penalty for AI response (0.7 = encourages asking missing information only)
+AI_PRESENCE_PENALTY = 0.7
+# Set stop sequences to end response at correct point (prevents model from continuing beyond intended response)
+AI_STOP_SEQUENCES = ["\n\nPatient:", "\n\nUser:", "\n\n---", "END_OF_RESPONSE"]

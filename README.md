@@ -44,7 +44,7 @@ A production-ready medical chatbot application that allows users to input their 
 
 ```
 Pulse_AI/
-├── backend/
+├── Server_Side/                  # Backend (FastAPI)
 │   ├── app/                      # Application package
 │   │   ├── __init__.py
 │   │   ├── main.py              # FastAPI app instance and configuration
@@ -67,14 +67,13 @@ Pulse_AI/
 │   ├── main.py                  # Entry point (imports app.main)
 │   ├── requirements.txt         # Python dependencies
 │   └── venv/                    # Virtual environment (not in git)
-├── frontend/
+├── Client_Side/                  # Frontend (React)
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── ChatComponent.js  # Main chat interface
 │   │   │   └── Sidebar.js        # Navigation and chat history
 │   │   ├── services/
 │   │   │   └── api.js            # API service layer
-│   │   ├── utils/                # Utility functions
 │   │   ├── App.js                # Root React component
 │   │   ├── index.js              # React entry point
 │   │   └── index.css              # Global styles with Tailwind
@@ -101,8 +100,12 @@ Pulse_AI/
 
 ### Backend Setup
 
-1. **Navigate to backend directory:**
+1. **Navigate to Server_Side directory:**
    ```bash
+   # Windows Command Prompt
+   cd D:\Pulse_AI\Server_Side
+   
+   # Or if already in Pulse_AI directory
    cd Server_Side
    ```
 
@@ -122,11 +125,21 @@ Pulse_AI/
    pip install -r requirements.txt
    ```
 
-4. **Create a `.env` file in the backend directory:**
+4. **Create a `.env` file in the Server_Side directory:**
+   
+   Create a new file named `.env` in the `Server_Side` folder with the following content:
    ```env
    MONGO_URI=mongodb://localhost:27017
    GROQ_API_KEY=your_groq_api_key_here
    ```
+   
+   **Windows Command Prompt:**
+   ```cmd
+   cd D:\Pulse_AI\Server_Side
+   notepad .env
+   ```
+   
+   Then paste the environment variables above and save the file.
 
 5. **Start MongoDB (if running locally):**
    ```bash
@@ -141,21 +154,36 @@ Pulse_AI/
    ```
 
 6. **Run the FastAPI server:**
+   
+   **Option 1: Using `python -m uvicorn` (Recommended - Works in all environments):**
    ```bash
-   # Make sure you're in the backend directory
-   cd backend
+   # Windows Command Prompt or PowerShell
+   cd Server_Side
+   python -m uvicorn main:app --reload --port 8000
+   ```
+   
+   **Option 2: Using `uvicorn` command directly:**
+   ```bash
+   # Windows Command Prompt or PowerShell
+   cd Server_Side
    uvicorn main:app --reload --port 8000
    ```
    
-   **Important:** The `uvicorn` command must be run from the `backend` directory where `main.py` is located.
-
-   The API will be available at `http://localhost:8000`
-   API documentation (Swagger UI) will be available at `http://localhost:8000/docs`
+   **Important Notes:**
+   - The command must be run from the `Server_Side` directory where `main.py` is located
+   - If you get a path error with `uvicorn`, use `python -m uvicorn` instead
+   - The `--reload` flag enables auto-reload on code changes (development mode)
+   - The API will be available at `http://localhost:8000`
+   - API documentation (Swagger UI) will be available at `http://localhost:8000/docs`
 
 ### Frontend Setup
 
-1. **Navigate to frontend directory:**
+1. **Navigate to Client_Side directory:**
    ```bash
+   # Windows Command Prompt
+   cd D:\Pulse_AI\Client_Side
+   
+   # Or if already in Pulse_AI directory
    cd Client_Side
    ```
 
@@ -231,9 +259,86 @@ Update a chat session (rename or pin/unpin).
 ### DELETE `/api/sessions/{session_id}`
 Delete a chat session from the database.
 
+## Running the Application Manually
+
+### Step-by-Step Command Prompt Instructions
+
+#### 1. Start the Backend Server
+
+**Open a Command Prompt or PowerShell window:**
+
+```cmd
+# Navigate to the Server_Side directory
+cd D:\Pulse_AI\Server_Side
+
+# Activate virtual environment (if using one)
+venv\Scripts\activate
+
+# Run the FastAPI server
+python -m uvicorn main:app --reload --port 8000
+```
+
+**Expected Output:**
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process
+INFO:     Started server process
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+```
+
+**Keep this window open** - the server must remain running.
+
+#### 2. Start the Frontend Server
+
+**Open a NEW Command Prompt or PowerShell window:**
+
+```cmd
+# Navigate to the Client_Side directory
+cd D:\Pulse_AI\Client_Side
+
+# Install dependencies (only needed the first time or after changes)
+npm install
+
+# Start the React development server
+npm start
+```
+
+**Expected Output:**
+```
+Compiled successfully!
+
+You can now view pulse-ai-frontend in the browser.
+
+  Local:            http://localhost:3000
+  On Your Network:  http://192.168.x.x:3000
+```
+
+**Keep this window open** - the frontend server must remain running.
+
+#### 3. Access the Application
+
+- Open your web browser
+- Navigate to `http://localhost:3000`
+- The application should load and connect to the backend API
+
+### Quick Start Commands Summary
+
+**Terminal 1 (Backend):**
+```cmd
+cd D:\Pulse_AI\Server_Side
+python -m uvicorn main:app --reload --port 8000
+```
+
+**Terminal 2 (Frontend):**
+```cmd
+cd D:\Pulse_AI\Client_Side
+npm start
+```
+
 ## Usage
 
-1. **Start both backend and frontend servers** (see setup instructions above)
+1. **Start both backend and frontend servers** (see instructions above)
 
 2. **Open your browser** and navigate to `http://localhost:3000`
 
@@ -293,8 +398,12 @@ Delete a chat session from the database.
 - Verify the model name is correct (`llama-3.3-70b-versatile`)
 
 **Port Already in Use:**
-- Change port in uvicorn command: `uvicorn main:app --reload --port 8001`
-- Update frontend API URL in `ChatComponent.js` accordingly
+- Change port in uvicorn command: `python -m uvicorn main:app --reload --port 8001`
+- Update frontend API URL in `Client_Side/src/services/api.js` accordingly (change `API_BASE_URL`)
+
+**Uvicorn Path Error:**
+- If you see "Unable to create process" error, use `python -m uvicorn` instead of `uvicorn`
+- This ensures the correct Python interpreter is used
 
 ### Frontend Issues
 
@@ -318,20 +427,27 @@ Delete a chat session from the database.
 
 **Backend:**
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8000
+# Windows Command Prompt
+cd Server_Side
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
+
+# Or without reload for production
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 **Frontend:**
 ```bash
+# Windows Command Prompt
+cd Client_Side
 npm run build
-# Serve the build folder using a static file server
+# Serve the build folder using a static file server (e.g., nginx, Apache, or serve)
 ```
 
 ### Environment Variables
 
-Create a `.env` file in the `backend` directory with:
-- `MONGO_URI`: MongoDB connection string
-- `GROQ_API_KEY`: Your Groq API key
+Create a `.env` file in the `Server_Side` directory with:
+- `MONGO_URI`: MongoDB connection string (e.g., `mongodb://localhost:27017`)
+- `GROQ_API_KEY`: Your Groq API key (get one from https://console.groq.com/keys)
 
 ## License
 
