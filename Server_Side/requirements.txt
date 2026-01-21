@@ -5,9 +5,12 @@ fastapi==0.104.1
 # [standard] includes additional dependencies for better performance
 # Version 0.24.0 supports async operations and WebSocket
 uvicorn[standard]==0.24.0
-# Motor library for asynchronous MongoDB operations
-# Version 3.3.2 provides async MongoDB driver built on top of pymongo
+# Motor library - PyMongo's async driver for async MongoDB operations
+# Version 3.3.2 provides AsyncMongoClient for non-blocking operations with FastAPI
 motor==3.3.2
+# PyMongo library for BSON/ObjectId utilities and version pinning
+# Version 4.6.0 provides MongoDB driver with ObjectId and BSON support
+pymongo==4.6.0
 # Pydantic library for data validation and serialization
 # Using newer version with pre-built wheels for Python 3.14
 # Version >=2.9.0 provides improved performance and type validation
@@ -22,6 +25,3 @@ httpx>=0.25.0
 # Python-dotenv for loading environment variables from .env file
 # Version 1.0.0 loads environment variables from .env file into os.environ
 python-dotenv==1.0.0
-# BSON library for MongoDB ObjectId handling (included with pymongo)
-# Version 4.6.0 provides MongoDB driver with ObjectId support
-pymongo==4.6.0

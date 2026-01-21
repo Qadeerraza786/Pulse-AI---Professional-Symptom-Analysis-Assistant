@@ -1,7 +1,5 @@
 // Import React library for building UI components
 import React, { useState, useRef, useEffect } from 'react';
-// Import axios library for making HTTP requests to backend API
-import axios from 'axios';
 
 // Sidebar component for navigation and chat history
 function Sidebar({ chatHistory, loadingHistory, onNewChat, onSelectChat, onChatUpdate, onChatDelete }) {

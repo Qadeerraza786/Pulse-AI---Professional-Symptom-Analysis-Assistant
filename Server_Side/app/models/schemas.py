@@ -94,7 +94,7 @@ class ChatSession(BaseModel):
         # Allow populating fields by both field name and alias
         populate_by_name=True,
         # Use enum values instead of enum objects
-        use_enum_values=True,
+        use_enum_values=True,   
         # Custom JSON encoder for ObjectId (convert to string)
         json_encoders={ObjectId: str}
     )

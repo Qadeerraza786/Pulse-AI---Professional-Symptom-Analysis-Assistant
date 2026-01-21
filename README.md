@@ -124,6 +124,8 @@ Pulse_AI/
    ```bash
    pip install -r requirements.txt
    ```
+   
+   **MongoDB drivers:** This backend uses Motor for async database operations and PyMongo for BSON/ObjectId utilities and version pinning.
 
 4. **Create a `.env` file in the Server_Side directory:**
    

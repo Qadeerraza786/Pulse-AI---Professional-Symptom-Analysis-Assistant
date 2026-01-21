@@ -1,7 +1,7 @@
 """
 Database connection and management for MongoDB.
 """
-# Import AsyncIOMotorClient for async MongoDB operations
+# Import AsyncMongoClient for async MongoDB operations
 from motor.motor_asyncio import AsyncIOMotorClient
 # Import logging module for application logging
 import logging

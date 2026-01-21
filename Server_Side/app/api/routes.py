@@ -81,12 +81,10 @@ async def chat_with_ai(patient_input: PatientInput):
             )
         
         # Construct user message from patient input - start with name and required message
-        # Build message with name first
-        user_message = f"Patient Name: {patient_name}\nMessage: {patient_message}"
-        # Add problem/disease if provided (optional)
+        user_message = f"Patient Name: {patient_name}"
         if patient_problem:
-            # Insert problem between name and message
-            user_message = f"Patient Name: {patient_name}\nProblem: {patient_problem}\nMessage: {patient_message}"
+            user_message += f"\nProblem: {patient_problem}"  # Append problem to the message
+        user_message += f"\nMessage: {patient_message}"  # Append the patient message
         
         # Initialize conversation history and session variables
         conversation_history = []
@@ -196,9 +194,6 @@ async def chat_with_ai(patient_input: PatientInput):
     except HTTPException:
         raise
     # Catch any other unexpected exceptions
-    except HTTPException:
-        # Re-raise HTTP exceptions as-is
-        raise
     except Exception as e:
         # Log unexpected error with full details (for debugging)
         logger.error(f"Unexpected error in chat endpoint: {str(e)}", exc_info=True)
